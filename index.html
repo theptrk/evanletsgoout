@@ -200,7 +200,21 @@
     #gameInProgress {
       font-size: 14px; }
   </style>
-  <link rel="stylesheet" type="text/css" href="/resources/tutorial/css/example.css">
+  <style type="text/css" media="screen">
+    .suggestions-container {
+      background-color: #dfe3ea;
+    }
+    .suggestions-list-container{
+      margin-left: 30px;
+    }
+    .suggestions-container {
+      margin-left: 30px;
+    }
+    ul {
+        list-style-type: none;
+    }
+  </style>
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
   <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
   <script src="https://cdn.firebase.com/js/client/2.2.1/firebase.js"></script>
   <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js'></script>
@@ -233,6 +247,68 @@
       <input type='text' id='messageInput'  placeholder='Type a message...'>
     </footer>
   </div>
+  <div class="row">
+    <div class="col-md-6 suggestions-list-container">
+      <hr/>
+      <h3>Go where</h3>
+      <ul id='suggestions-list'></ul>
+    </div>
+  </div>
+  <div class='row'>
+    <div class="col-md-6 suggestions-container">
+        <h3>Suggestions</h3>
+        <div class="form-group">
+          <label for="suggestion-title">Title</label>
+          <input type="text" class="form-control" id="suggestion-title" placeholder="Title">
+        </div>
+        <div class="form-group">
+          <label for="suggestion-link">Link</label>
+          <input type="text" class="form-control" id="suggestion-link" placeholder="Link">
+        </div>
+        <button id="suggestion-submit" class="btn btn-default">Submit</button>
+    </div>
+  </div>
+  <script>
+    // get firebase reference
+    var suggestionsRef = new Firebase('https://evanletsgoout.firebaseio.com/');
+    // cache DOM elements
+    var suggestionTitleField = $('#suggestion-title');
+    var suggestionLinkField = $('#suggestion-link');
+    var suggestionSubmit = $('#suggestion-submit');
+
+    function handleSubmit (e) {
+      if (e.keyCode === 13) {
+        // save data to firebase
+        suggestionsRef.push({
+          suggestionTitle: suggestionTitleField.val(),
+          suggestionLink: suggestionLinkField.val()
+        });
+        // empty fields        
+        suggestionTitleField.val('');
+        suggestionLinkField.val('');
+      }
+      
+    }
+    
+    suggestionTitleField.keypress(handleSubmit);
+    suggestionLinkField.keypress(handleSubmit);
+    suggestionSubmit.click(handleSubmit);
+
+    // Add a callback that is triggered for each chat message.
+    suggestionsRef.limitToLast(50).on('child_added', function (snapshot) {
+      //GET DATA
+      var data = snapshot.val();
+      console.log('=== data ===');
+      console.log(data);
+      var suggestElement = $("<li>");
+      var suggestElementFilled = suggestElement.html("<a href='" + 
+        data.suggestionLink + "'  target='_blank'>" + 
+        data.suggestionTitle + "</a>");
+      $('#suggestions-list').append(suggestElementFilled);
+
+    });
+    
+  </script>
   <!-- CHAT JAVACRIPT -->
   <script>
     // CREATE A REFERENCE TO FIREBASE
